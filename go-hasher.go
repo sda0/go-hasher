@@ -15,31 +15,30 @@ import (
 
 func main() {
 
-	algos := [...]string{"md5", "sha1", "sha256", "sha512"}
-	flags := make([]*bool, len(algos))
-	for i, a := range algos {
-		flags[i] = flag.Bool(a, false, fmt.Sprintf("-%s calculate %s hash of file", a, a))
+	flagNames := [...]string{"md5", "sha1", "sha256", "sha512"}
+	flags := make([]*bool, len(flagNames))
+	for i, a := range flagNames {
+		flags[i] = flag.Bool(a, false, fmt.Sprintf("-%s return %s hash", a, a))
 	}
 	flag.Parse()
 
-	// Blocks of var/const work just as well inside a function call
 	var (
-		writers []io.Writer
-		hashes  []hash.Hash
-		names   []string
+		writers  []io.Writer
+		cryptors []hash.Hash
+		names    []string
 	)
 
 	push := func(name string, h hash.Hash) {
 		writers = append(writers, h)
-		hashes = append(hashes, h)
+		cryptors = append(cryptors, h)
 		names = append(names, name)
 	}
 
-	hasher := [...]hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()}
+	cryptor := [...]hash.Hash{md5.New(), sha1.New(), sha256.New(), sha512.New()}
 
 	for i, flag2 := range flags {
 		if *flag2 {
-			push(algos[i], hasher[i])
+			push(flagNames[i], cryptor[i])
 		}
 	}
 
@@ -57,6 +56,6 @@ func main() {
 	io.Copy(io.MultiWriter(writers...), in)
 
 	for i, name := range names {
-		fmt.Printf("%9s: %x\n", name, hashes[i].Sum(nil))
+		fmt.Printf("%9s: %x\n", name, cryptors[i].Sum(nil))
 	}
 }
